@@ -1,7 +1,10 @@
 /* Szyfr Cezara */
-#include <cctype>
 #include <iostream>
-#include <string>
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
+#include <cctype>
+#include <cstring>
 
 using namespace std;
 
@@ -10,17 +13,145 @@ string decode(string, int);
 
 int main()
 {
-    for(int bajt = 32; bajt < 127; ++bajt)//tylko printable chars
-        if(isprint(bajt))
-            cout << bajt << char(bajt) << "; ";
-            
-    cout << endl << "szyfr: ";
-    string test="tata}~", crypted, decrypted;
-    cout << test << endl;
-    crypted = encode(test,1);
-    cout << crypted << endl;
-    decrypted = decode(crypted,1);
-    cout << decrypted << endl;
+    char ccase=0;
+    string phrase, line, filename, crypted, decrypted;
+    int key, length;
+    do{
+        cout << " Menu:\n";
+        cout << " a - pokaz obslugiwane znaki\n";
+        cout << " 1. Szyfrowanie wiadomosci\n";
+        cout << " 2. Deszyfrowanie wiadomosci\n";
+        cout << " 3. Szyfrowanie pliku\n";
+        cout << " 4. Deszyfrowanie pliku\n";
+        cout << " --- \n";
+        cin >> ccase;
+        switch (ccase){
+            case 'a': {
+                for(int bajt = 32; bajt < 127; ++bajt)//tylko printable chars
+                    if(isprint(bajt))
+                        cout << char(bajt) << " ";
+                cout << endl;
+                break;}
+            case '1':{
+                cout << "Podaj ciag znakow do zaszyfrowania: ";
+                cin >> phrase;
+                cout << endl << "Podaj przesuniecie: ";
+                cin >> key;
+                cout << endl;
+                crypted = encode(phrase,key);
+                cout << "Zaszyfrowana fraza: " << crypted << endl << endl;
+                break;}
+            case '2':{
+                cout << "Podaj ciag znakow do zdeszyfrowania: ";
+                cin >> phrase;
+                cout << endl << "Podaj przesuniecie: ";
+                cin >> key;
+                cout << endl;
+                decrypted = decode(phrase,key);
+                cout << "Zdeszyfrowana fraza: " << decrypted << endl << endl;
+                break;}
+            case '3':{
+                filename = "in.txt";
+                ifstream phrasefile (filename);
+                if (phrasefile.is_open()){
+                    phrasefile.seekg(0,phrasefile.end);
+                    length = phrasefile.tellg();
+                    phrasefile.seekg (0,phrasefile.beg);
+
+                    char * buffer = new char [length];
+                    cout << "Zczytano " << length << " znakow.\n";
+                    phrasefile.read(buffer,length);
+                    phrase = buffer;
+                    delete[] buffer;
+                    phrasefile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                filename = "key.txt";
+                ifstream keyfile(filename);
+                if (keyfile.is_open()){
+                    while (getline (keyfile,line) ){
+                        istringstream dane(line);
+                        dane >> key;
+                    }
+                    keyfile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                cout << "Odczytany ciag: " << phrase << " \nKlucz: " << key << endl;
+                crypted = encode(phrase,key);
+                cout << "Zakodowany ciag: " << crypted << endl;
+//zapis
+                filename = "in2.txt";
+                ofstream encodefile (filename);
+                if (encodefile.is_open()){
+                    
+                    char * buffer = new char [length];
+                    strcpy(buffer,crypted.c_str());
+                    encodefile.write(buffer,length);
+                    delete[] buffer;
+                    encodefile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                break;}
+            case '4':{
+                filename = "in2.txt";
+                ifstream phrasefile (filename);
+                if (phrasefile.is_open()){
+                    phrasefile.seekg(0,phrasefile.end);
+                    length = phrasefile.tellg();
+                    phrasefile.seekg (0,phrasefile.beg);
+
+                    char * buffer = new char [length];
+                    cout << "Zczytano " << length << " znakow.\n";
+                    phrasefile.read(buffer,length);
+                    phrase = buffer;
+                    delete[] buffer;
+                    phrasefile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                filename = "key.txt";
+                ifstream keyfile(filename);
+                if (keyfile.is_open()){
+                    while (getline (keyfile,line) ){
+                        istringstream dane(line);
+                        dane >> key;
+                    }
+                    keyfile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                cout << "Zakodowany ciag: " << phrase << " \nKlucz: " << key << endl;
+                crypted = decode(phrase,key);
+                cout << "Odkodowany ciag: " << crypted << endl;
+//zapis
+                filename = "out2.txt";
+                ofstream encodefile (filename);
+                if (encodefile.is_open()){
+                    
+                    char * buffer = new char [length];
+                    strcpy(buffer,crypted.c_str());
+                    encodefile.write(buffer,length);
+                    delete[] buffer;
+                    encodefile.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                break;}
+            default :
+                cout << "Niewlasciwy znak" <<endl;
+        }
+    }while(ccase != 'x');
+       
+
     return 0;
 }
 
