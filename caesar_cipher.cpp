@@ -16,6 +16,7 @@ int main()
     char ccase=0;
     string phrase, line, filename, crypted, decrypted;
     int key, length;
+    int Tab[2][95];
     do{
         cout << " Menu:\n";
         cout << " a - pokaz obslugiwane znaki\n";
@@ -27,10 +28,27 @@ int main()
         cin >> ccase;
         switch (ccase){
             case 'a': {
-                for(int bajt = 32; bajt < 127; ++bajt)//tylko printable chars
-                    if(isprint(bajt))
-                        cout << char(bajt) << " ";
+                filename = "parykluczy.txt";
+                ofstream plikkluczy (filename);
+                if (plikkluczy.is_open()){
+                    for(int bajt = 32; bajt < 127; ++bajt)//tylko printable chars
+                        if(isprint(bajt)){
+                            cout << char(bajt) << " ";
+                            char * buffer = new char [6];
+                            buffer[0] = char(bajt);
+                            buffer[1] = ' ';
+                            buffer[2] = '-';
+                            buffer[3] = ' ';
+                            buffer[4] = char(bajt+1);
+                            buffer[5] = '\r';
+                            plikkluczy.write(buffer,5);
+                            
+                            delete[] buffer;
+                        }
+                    plikkluczy.close();
+                    }
                 cout << endl;
+                
                 break;}
             case '1':{
                 cout << "Podaj ciag znakow do zaszyfrowania: ";
@@ -146,6 +164,20 @@ int main()
                     break;
                 }
                 break;}
+            case '5':{
+                filename = "parykluczy.txt";
+                ifstream plik(filename);
+                if (plik.is_open()){
+                    for (int i = 1; i < 95; i++){
+                        plik >> Tab[0][i];
+                        plik >> Tab[1][i];
+                    }
+                    plik.close();
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+            }
             default :
                 cout << "Niewlasciwy znak" <<endl;
         }
