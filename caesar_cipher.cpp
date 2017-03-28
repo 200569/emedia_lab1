@@ -10,13 +10,14 @@ using namespace std;
 
 string encode(string, int);
 string decode(string, int);
+string encodewithkey(string, int [95]);
 
 int main()
 {
     char ccase=0;
     string phrase, line, filename, crypted, decrypted;
     int key, length;
-    int Tab[2][95];
+    int Tab[95];
     do{
         cout << " Menu:\n";
         cout << " a - pokaz obslugiwane znaki\n";
@@ -40,8 +41,10 @@ int main()
                             buffer[2] = '-';
                             buffer[3] = ' ';
                             buffer[4] = char(bajt+1);
-                            buffer[5] = '\r';
-                            plikkluczy.write(buffer,5);
+                            Tab[bajt-32] = buffer[4] - '\0';
+                            buffer[5] = '\n';
+                            plikkluczy << buffer;// przy okazji wyswietlania literek wrzucam pary kluczy do pliku
+                            plikkluczy.flush();
                             
                             delete[] buffer;
                         }
@@ -101,7 +104,7 @@ int main()
                 cout << "Odczytany ciag: " << phrase << " \nKlucz: " << key << endl;
                 crypted = encode(phrase,key);
                 cout << "Zakodowany ciag: " << crypted << endl;
-//zapis
+
                 filename = "in2.txt";
                 ofstream encodefile (filename);
                 if (encodefile.is_open()){
@@ -149,7 +152,7 @@ int main()
                 cout << "Zakodowany ciag: " << phrase << " \nKlucz: " << key << endl;
                 crypted = decode(phrase,key);
                 cout << "Odkodowany ciag: " << crypted << endl;
-//zapis
+
                 filename = "out2.txt";
                 ofstream encodefile (filename);
                 if (encodefile.is_open()){
@@ -165,18 +168,40 @@ int main()
                 }
                 break;}
             case '5':{
-                filename = "parykluczy.txt";
-                ifstream plik(filename);
-                if (plik.is_open()){
-                    for (int i = 1; i < 95; i++){
-                        plik >> Tab[0][i];
-                        plik >> Tab[1][i];
-                    }
-                    plik.close();
+                filename = "in3.txt";
+                ifstream phrasefile2 (filename);
+                if (phrasefile2.is_open()){
+                    phrasefile2.seekg(0,phrasefile2.end);
+                    length = phrasefile2.tellg();
+                    phrasefile2.seekg (0,phrasefile2.beg);
+
+                    char * buffer = new char [length];
+                    cout << "Zczytano " << length << " znakow.\n";
+                    phrasefile2.read(buffer,length);
+                    phrase = buffer;
+                    delete[] buffer;
+                    phrasefile2.close();
                 }else {
                     cout << "Nie moge otworzyc pliku " << filename << endl; 
                     break;
                 }
+                crypted = encodewithkey(phrase,Tab);
+                cout << endl << crypted << endl;
+
+                filename = "out3.txt";
+                ofstream encodefile2 (filename);
+                if (encodefile2.is_open()){
+                    char * buffer = new char [length];
+                    strcpy(buffer,crypted.c_str());
+                    encodefile2.write(buffer,length);
+                    delete[] buffer;
+                    encodefile2.close();
+                    cout << "Zapisano do pliku " << filename<<endl;
+                }else {
+                    cout << "Nie moge otworzyc pliku " << filename << endl; 
+                    break;
+                }
+                break;
             }
             default :
                 cout << "Niewlasciwy znak" <<endl;
@@ -207,6 +232,26 @@ string encode(string Phrase, int key){
         }
         //cout << " Bajt przesuniety: " << Tab[i] << " literka: "<< char(Tab[i]) <<endl;
         Crypted[i] = '\0'+ Tab[i];
+    }
+    Crypted[PhraseSize] = '\0';
+    return Crypted;
+}
+
+string encodewithkey(string Phrase, int Tab[95]){
+    string Crypted = Phrase;
+    uint PhraseSize = Phrase.length();
+    //cout << "Rozmiar slowa: " << PhraseSize <<endl;
+    int Tabbyte[PhraseSize];
+    int tmplength = Phrase.length();
+    for(uint i = 0; i < tmplength; i++){
+        if (i<95){
+            Tabbyte[i] = Crypted[i] - '\0';
+            //cout << "Bajt: " << Tab[i] << " Litera: " << Crypted[i];
+            Tabbyte[i] = Tab[Tabbyte[i]-32];
+            
+            //cout << " Bajt przesuniety: " << Tab[i] << " literka: "<< char(Tab[i]) <<endl;
+            Crypted[i] = '\0'+ Tabbyte[i];
+        }else{tmplength-95;--i;}
     }
     Crypted[PhraseSize] = '\0';
     return Crypted;
